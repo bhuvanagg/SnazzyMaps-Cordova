@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <script src="js/index.js"></script>
+    <title>Places Searchbox</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+        #map {
+            display: block;
+            height: 50%;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+      }
+      .controls {
+        margin-top: 10px;
+        border: 1px solid transparent;
+        border-radius: 2px 0 0 2px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        height: 32px;
+        outline: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #pac-input {
+        background-color: #fff;
+        font-family: Roboto;
+        font-size: 15px;
+        font-weight: 300;
+        margin-left: 12px;
+        padding: 0 11px 0 13px;
+        text-overflow: ellipsis;
+        width: 300px;
+      }
+
+      #pac-input:focus {
+        border-color: #4d90fe;
+      }
+
+      .pac-container {
+        font-family: Roboto;
+      }
+
+      #type-selector {
+        color: #fff;
+        background-color: #4d90fe;
+        padding: 5px 11px 0px 11px;
+      }
+
+      #type-selector label {
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+      }
+      #target {
+        width: 345px;
+      }
+    #mapLayouts
+        {
+            
+            border: 2px black solid;
+        }
+    .imgClass
+        {
+            height: 100px;
+            width: 100px;
+        }
+    h1
+        {
+            text-align: center;
+        }
+    h2
+        {
+            text-align: center;
+        }
+      p
+        {
+            text-align: center;
+        }
+@media and screen and (max-width: 600px)
+{
+ 
+    #map
+    {
+        width: 150%;
+    }
+}
+    </style>
+  </head>
+  <body onload='getStyles()'>
+     <h1> Google Maps Styling using Snazzy Maps</h1>
+    <h2> Choose Style</h2>
+   <div id="mapLayouts"></div>
+<!--    <input id="pac-input" class="controls" type="text" placeholder="Search Box">-->
+    <div id="inputBox"></div>
+       <p> Generated Map </p>
+    <div id="map"></div>
+    <script>
+        var data55;
+      var getStyles = function()
+      { 
+          var url = "https://snazzymaps.com/explore.json?key=269142ef-0461-4ba2-a9b1-0760a5285df2";
+          loadURL(url, function(data) {
+              var styl = JSON.parse(data);
+              console.log(styl);
+              data55 = styl;
+              var rows = styl.styles; 
+              var markUp = "";
+              var layout = '';
+              for (var i = 0; i < rows.length; i++){
+                  var sty = rows[i];
+                  layout += "<a href='javascript:generateMap(" + i + ")'><img src= '" + sty.imageUrl + "' class='imgClass'></a>";
+                 
+                }
+                console.log(markUp);
+                //document.getElementById("dropDown").innerHTML =  markUp;
+                document.getElementById("mapLayouts").innerHTML = layout;
+                });
+    }
+            
+        
+        
+        
+        
+        
+      function generateMap(index) {
+          
+        var rows = data55.styles;
+        var custom = rows[index].json;
+        var c2 = JSON.parse(custom);
+        console.log(c2);
+         
+        document.getElementById("inputBox").innerHTML = "<input id='pac-input' class='controls' type='text' placeholder='Search Box'>";
+          
+          
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: -33.8688, lng: 151.2195},
+          zoom: 13,
+          styles: c2,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        var markers = [];
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+
+          // Clear out the old markers.
+          markers.forEach(function(marker) {
+            marker.setMap(null);
+          });
+          markers = [];
+
+          // For each place, get the icon, name and location.
+          var bounds = new google.maps.LatLngBounds();
+          places.forEach(function(place) {
+            var icon = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            markers.push(new google.maps.Marker({
+              map: map,
+              icon: icon,
+              title: place.name,
+              position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+              // Only geocodes have viewport.
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+      }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbLZjN3vm4Xn_7LmgAoi5sAhgMP5JG8dc&libraries=places"
+         async defer></script>
+  </body>
+</html>
